@@ -8,7 +8,7 @@ module.exports = require('../models')('Posters',{
     // pinned              : { type: Boolean, default: false }, top post?
     // comments            : { type: String, default: null },
     // user                : { type: 'ObjectId', ref: 'Users', default: null, index: true },
-    location            : { type: String, default: false },
+    location            : { type: String, default: null },
     // centroid            : [{ type: Mixed, default: 0.00}],
     pictures            : { type: String, default: null },
     content             : { type: String, default: null }, 

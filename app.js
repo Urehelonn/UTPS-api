@@ -2,6 +2,9 @@ var app = require("express")();
 var hostname      = process.env.API_HOSTNAME || "localhost:3000";
 var mongoose      = require("mongoose");
 var winston       = require('winston');
+var swaggerTools  = require("swagger-tools");
+var YAML          = require("yamljs");
+var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
 var bodyParser    = require('body-parser');
 var cors          = require('cors');
 var dbConnection  = 'mongodb://'
@@ -10,7 +13,7 @@ var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_DATABASE || 'utpsdb');
 var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
-const route = require('./routes')
+const route = require('./route/routes');
 // Logging middleware
 const logger = winston.createLogger({
     level: 'info',
@@ -27,12 +30,38 @@ const logger = winston.createLogger({
   //body-parser
 // Increase postbody sizing
 app.use(bodyParser.json({limit: '10mb', extended: true}))
-// app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
+app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
+// Enable CORS
+app.use(function (req, res, next) {
+  logger.info(req.method, req.url);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE, HEAD');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization,responseType');
+  res.setHeader('Access-Control-Expose-Headers', 'x-total-count,x-pending-comment-count,x-next-comment-id');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Cache-Control', 'max-age=4');
+  next();
+});
 // Dynamically set the hostname based on what environment we're in
+swaggerConfig.host = hostname;
 
-app.use('/api', route);
-  
+if (hostname !== 'localhost:3000') {
+  swaggerConfig.schemes = ['https'];
+}
+
+swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
+    app.use(middleware.swaggerMetadata());
+
+    app.use(middleware.swaggerRouter(routerConfig));
+    // app.use('/api', route);
+    app.use(middleware.swaggerUi({apiDocs: '/api/docs', swaggerUi: '/api/docs'}));
+
+    var routerConfig = {
+      controllers: "./api/controllers",
+      useStubs: false
+    };
+      
   
   // Load up DB
   var options = {
@@ -51,15 +80,17 @@ app.use('/api', route);
 app.get('/', (req,res)=>{
     res.send('foobar');
 })
-console.log("I am here", dbConnection);
   logger.info("Connecting to:", dbConnection);
   mongoose.Promise  = global.Promise;
-  mongoose.connect(dbConnection,options)
-  mongoose.connection.on('connected',()=> {
-    app.listen(3000, "localhost", function() {
+  var db = mongoose.connect(dbConnection, options).then(
+    () => {
+      logger.info("Database connected");
+      app.listen(3000, "localhost", function() {
         logger.info("Started server on port 3000");
-          }
-  )},   err => {
-    logger.info("err:", err);
+       });
+    },   
+    err => {
+      logger.info("err:", err);
       return;
     });
+  });
