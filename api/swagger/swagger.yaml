@@ -4,6 +4,11 @@ info:
   title: UTPS API
 host: localhost:3000
 basePath: /api
+tags:
+- name: "Posters"
+externalDocs:
+  description: "Find out more about our API"
+  url: "https://github.com/w8896699/utps-api"
 schemes:
   - http
 consumes:
@@ -11,4 +16,134 @@ consumes:
 produces:
   - application/json
 paths:
-  
+  /allposters:
+    x-swagger-router-controller: poster
+    options:
+      tags:
+        - Posters
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Poster Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/PosterObject"
+        "403":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - Posters
+      summary: "Get Poster"
+      operationId: publicGet
+      description: "Get top Poster."
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/PosterObject"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - Posters
+      summary: "Create a new Poster"
+      operationId: tPost
+      description: "Create a new Posters object."
+      parameters:
+        - name: Poster
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PosterId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/PosterObject"
+        400:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /allposters/{posterId}:
+    x-swagger-router-controller: poster
+    options:
+      tags:
+        - Posters
+      summary: "Pre-flight request"
+      operationId: delectOptions
+      description: "Options on PosterET Route"
+      parameters:
+        - name: posterId
+          in: path
+          description: "ID of poster to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/PosterObject"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - Posters
+      summary: "Delete an poster"
+      operationId: protectedDelete
+      description: "Delete an poster object."
+      # security:
+      #   - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+      parameters:
+        - name: posterId
+          in: path
+          description: "ID of recentActivity to delete"
+          required: true
+          type: "string"
+        - name: RecentActivityObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/PosterObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/PosterObject"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+definitions:
+  ### Project Definitions
+  PosterId:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "5d4e4953d4cb313c271fb26b"
+  PosterObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "5d4e4953d4cb313c271fb26b"
+      tags:
+        type: string
+        example: "[['public']]"
+        ## TODO: Add more fields here.
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
