@@ -12,7 +12,7 @@ externalDocs:
 schemes:
   - http
 consumes:
-  - application/json
+  - application/json 
 produces:
   - application/json
 paths:
@@ -25,7 +25,7 @@ paths:
       operationId: protectedOptions
       description: "Options on Poster Route"
       responses:
-        "200":
+        "204":
           description: "Success"
           schema:
             $ref: "#/definitions/PosterObject"
@@ -38,6 +38,22 @@ paths:
         - Posters
       summary: "Get Poster"
       operationId: publicGet
+      parameters:
+        - in: query
+          name: populate
+          description: "Populate Project object ID"
+          type: boolean
+          required: false
+        - in: query
+          name: _schemaName
+          description: "Schema to search on"
+          type: string
+          required: false
+        - in: query
+          name: pageSize
+          description: "# Records to limit"
+          type: number
+          required: false
       description: "Get top Poster."
       responses:
         200:
@@ -139,7 +155,7 @@ definitions:
         example: "5d4e4953d4cb313c271fb26b"
       tags:
         type: string
-        example: "[['public']]"
+        example: "[['comming soon']]"
         ## TODO: Add more fields here.
   ErrorResponse:
     required:
