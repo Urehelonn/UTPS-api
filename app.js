@@ -13,7 +13,8 @@ var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_DATABASE || 'utpsdb');
 var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
-const route = require('./route/routes');
+// var route       = require('./route/routes');
+
 // Logging middleware
 const logger = winston.createLogger({
     level: 'info',
@@ -52,7 +53,12 @@ if (hostname !== 'localhost:3000') {
 
 swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     app.use(middleware.swaggerMetadata());
-
+    
+    var routerConfig = {
+      controllers: "./api/controllers",
+      useStubs: false
+    };
+  
     app.use(middleware.swaggerRouter(routerConfig));
     // app.use('/api', route);
     app.use(middleware.swaggerUi({apiDocs: '/api/docs', swaggerUi: '/api/docs'}));
@@ -85,6 +91,10 @@ app.get('/', (req,res)=>{
   var db = mongoose.connect(dbConnection, options).then(
     () => {
       logger.info("Database connected");
+      logger.info("loading db models.");
+      require('./api/helper/model/poster');
+      require('./api/helper/model/audit');
+      
       app.listen(3000, "localhost", function() {
         logger.info("Started server on port 3000");
        });

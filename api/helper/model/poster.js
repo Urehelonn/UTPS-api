@@ -5,7 +5,7 @@ module.exports = require('../models')('Posters',{
     // _addedBy            : { type: String, default: null },
     // _updatedBy          : { type: String, default: null },
 
-    // pinned              : { type: Boolean, default: false }, top post?
+    validation              : { type: Boolean, default: true },
     // comments            : { type: String, default: null },
     // user                : { type: 'ObjectId', ref: 'Users', default: null, index: true },
     location            : { type: String, default: null },
