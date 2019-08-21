@@ -84,10 +84,36 @@ exports.newPost = async function (args, res, next) {
     var rec = await newPoster.save();
     // args.swagger.params.auth_payload.preferred_username
     utils.recordAction('Post', 'newPoster', 'Billy', rec._id);
-    defaultLog.info('Saved new Posyer object:', rec);
+    defaultLog.accessLog.info('Saved new Posyer object:', rec);
     return actions.accessLog.sendResponse(res, 200, rec);
   } catch (e) {
     defaultLog.errorLog.info('Error:', e);
     return actions.sendResponse(res, 400, e);
   }
 };
+exports.protectedDelete = function (args, res, next) {
+  defaultLog.accessLog.info("Deleting a Poster(s)");
+
+  // var RecentActivity = mongoose.model('RecentActivity');
+  var poster = mongoose.model('Posters');
+  var query = {};
+  // Build match query if on poster route
+  if (args.swagger.params.posterId) {
+    query = utils.buildQuery("_id", args.swagger.params.posterId.value, query);
+  }
+
+  if (!Object.keys(query).length > 0) {
+    // Don't allow unilateral delete.
+    return actions.sendResponse(res, 400, "Can't delete entire collection.");
+  }
+
+  // Straight delete, don't isDelete=true them.
+  poster.remove(query, function (err, data) {
+    if (data) {
+      utils.recordAction('Delete', 'Poster', 'Billy',data._id);
+      return actions.sendResponse(res, 200, data);
+    } else {
+      return actions.sendResponse(res, 400, err);
+    }
+  });
+}
