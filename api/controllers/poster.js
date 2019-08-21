@@ -14,7 +14,7 @@ var utils         = require('../helper/utils');
 var mongoose      = require("mongoose");
 var actions       = require('../helper/actions');
 var _             = require('lodash');
-var defaultLog = require('winston').loggers.get('default');
+var defaultLog    = require('../../logger');
 
 
 
@@ -41,6 +41,7 @@ exports.publicGet = async function (req, res) {
     dateAdded: -1
   };
   _.assignIn(query, { '_schemaName': 'Posters'});
+  // _.assignIn(query, { '_schemaName': 'Posters', validation: true });  // future feature
   try{
     var data =  await utils.runDataQuery('Posters',
     query,
@@ -49,13 +50,44 @@ exports.publicGet = async function (req, res) {
     false,
     false,
     true);
-    console.log('data', data);
+    // console.log('data', data);
     utils.recordAction('Get', 'Poster', 'public');
     return actions.sendResponse(res, 200, data);
   }
   catch(error){
-    defaultLog.info( 'Error: ', error);
+    defaultLog.errorLog.info( 'Error: ', error);
     return actions.sendResponse(res, 400, error)
   }
   
 }
+
+//  Create a new RecentActivity
+exports.newPost = async function (args, res, next) {
+  console.log('poster', args.swagger.params);
+  var obj = args.swagger.params.Poster.value;
+  defaultLog.accessLog.info("Incoming new object:", obj);
+
+  var Poster = mongoose.model("Posters");
+  delete obj._id;
+  var newPoster = new Poster(obj);
+  // Define security tag defaults.  Default public and sysadmin. // future feature plc holder
+
+  // if (poster.validation) {
+  //   newPoster.read = ['sysadmin', 'public'];
+  // } else {
+  //   newPoster.read = ['sysadmin'];
+  // }
+
+  newPoster.dateAdded = new Date();
+  // recentActivity._addedBy = args.swagger.params.auth_payload.preferred_username;
+  try {
+    var rec = await newPoster.save();
+    // args.swagger.params.auth_payload.preferred_username
+    utils.recordAction('Post', 'newPoster', 'Billy', rec._id);
+    defaultLog.info('Saved new Posyer object:', rec);
+    return actions.accessLog.sendResponse(res, 200, rec);
+  } catch (e) {
+    defaultLog.errorLog.info('Error:', e);
+    return actions.sendResponse(res, 400, e);
+  }
+};

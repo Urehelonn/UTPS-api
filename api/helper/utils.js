@@ -90,17 +90,17 @@ exports.runDataQuery = async function (modelType, query, fields, sort, populateP
         populateProponent && {
           "$unwind": "$proponent"
         },
-        populateProject && {
-          '$lookup': {
-            "from": "utpsdb",
-            "localField": "project",
-            "foreignField": "_id",
-            "as": "project"
-          }
-        },
+        // populateProject && {
+        //   '$lookup': {
+        //     "from": "utpsdb",
+        //     "localField": "user",
+        //     "foreignField": "_id",
+        //     "as": "user"
+        //   }
+        // },
         populateProject && {
           "$unwind": {
-            "path": "$project",
+            "path": "$user",
             "preserveNullAndEmptyArrays": true
           }
         },

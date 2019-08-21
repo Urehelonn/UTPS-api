@@ -1,7 +1,7 @@
 var app = require("express")();
 var hostname      = process.env.API_HOSTNAME || "localhost:3000";
 var mongoose      = require("mongoose");
-var winston       = require('winston');
+var defaultLog    = require('./logger');
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
 var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
@@ -15,16 +15,6 @@ var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
 // var route       = require('./route/routes');
 
-// Logging middleware
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
-    transports: [
-      new winston.transports.Console(),
-      new winston.transports.File({ filename: 'logfile.log' })
-    ]
-  });
-
   // addming middleware -cors
   app.use(cors());
 
@@ -35,7 +25,7 @@ app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
 // Enable CORS
 app.use(function (req, res, next) {
-  logger.info(req.method, req.url);
+  defaultLog.accessLog.info(req.method, req.url);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE, HEAD');
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization,responseType');
@@ -86,21 +76,21 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
 app.get('/', (req,res)=>{
     res.send('foobar');
 })
-  logger.info("Connecting to:", dbConnection);
+defaultLog.accessLog.info("Connecting to:", dbConnection);
   mongoose.Promise  = global.Promise;
   var db = mongoose.connect(dbConnection, options).then(
     () => {
-      logger.info("Database connected");
-      logger.info("loading db models.");
+      defaultLog.accessLog.info("Database connected");
+      defaultLog.accessLog.info("loading db models.");
       require('./api/helper/model/poster');
       require('./api/helper/model/audit');
       
       app.listen(3000, "localhost", function() {
-        logger.info("Started server on port 3000");
+        defaultLog.accessLog.info("Started server on port 3000");
        });
     },   
     err => {
-      logger.info("err:", err);
+      defaultLog.errorLog.info("err:", err);
       return;
     });
   });
