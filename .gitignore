@@ -1,3 +1,4 @@
 # dependencies
 /node_modules
-logfile.log
+errors.log
+access.log

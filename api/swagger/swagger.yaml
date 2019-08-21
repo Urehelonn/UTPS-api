@@ -68,7 +68,7 @@ paths:
       tags:
         - Posters
       summary: "Create a new Poster"
-      operationId: tPost
+      operationId: newPost
       description: "Create a new Posters object."
       parameters:
         - name: Poster
