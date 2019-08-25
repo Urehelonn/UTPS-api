@@ -141,7 +141,7 @@ exports.runDataQuery = async function (modelType, query, fields, sort, populateP
             locale: 'en',
             strength: 2
         };
-        console.log('aggregation', aggregations);
+        // console.log('aggregation', aggregations);
         theModel.aggregate(aggregations)
         .collation(collation)
         .exec()
